@@ -6,7 +6,7 @@ var toPort = require('hash-to-port');
 var app = express();
 var http = require('http').Server(app);
 var bodyParser = require('body-parser');
-
+var idArduino = process.argv[2];
 //Arreglo de ips y p[uertos de los otros arduinos
 var arduinos;
 //Un JSON de la Forma {position:N}, donde n es la posicion del vector de ips attackInfo, a la cual se atacara
@@ -22,9 +22,10 @@ var delay = 1000;
 //Ip del arduino
 var ip;
 //Data a enviarse en los posts
-var data = {
-      "id": "myIOT"
-    };
+var data = {};
+
+data.id = idArduino;
+
 var port = toPort(data.id);
 //Contador de post, para verificar si ya se reaalizaron los posts necesarios para escoger el lider
 var posts = 0;
@@ -64,14 +65,15 @@ console.log("ID:" + pid);
 
 //Post para enviar una vez al servidor la ip y puerto del arduino
 (request({
-url: "http://localhost:8080/ip",
+url: "http://localhost:8080/ips",
 method: "POST",
 json: true,   // <--Very important!!!
 body: info
 }, function (error, response, body){
+    console.log(body);
 })); 
 
-var controlLoop = setinterval(function(){
+var controlLoop = setInterval(function(){
     postIOT();
     if(leader && posts == length)
     {
@@ -98,12 +100,12 @@ function postIOT(){
             data.datetime = "\"" + time + "\"";
             data.data = {'sensor0':val1, 'sensor1':val2};
             (request({
-            url: "http://localhost:8080",
+            url: "http://localhost:8080/",
             method: "POST",
             json: true,
             body: data
             }, function (error, response, body){
-            console.log(body);
+            //console.log(body);
             if(!isNaN(body))
             {
                 console.log("Delay Changed");
@@ -111,6 +113,8 @@ function postIOT(){
             }
             else
             {
+                //console.log("BODY AQUI");
+                //console.log(body);
                 if(body != "ok")
                 {
                     console.log(body.arduino);

@@ -58,7 +58,7 @@ app.post("/", function(req, res){
     //console.log(knownIds);
 
     if(!attack) {
-      res.end();
+      res.end("ok");
     } else {
       /*{
           arduino:[{ip:2.1.3, port:123},...],
@@ -84,7 +84,7 @@ app.post("/", function(req, res){
 
       knownIds[id].changed = false;
     } else {
-      res.end();
+      res.end("ok");
     }
 
   }
