@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font: 13px Helvetica, Arial; }
+
+    div { background-color: #dddddd }
+    #attackDiv { height: 50px ; width: 100%; background-color: #ff4d4d}
+    #attackDiv input { margin-left: 40%; margin-top: 10px;}
+    </style>
+    <script src="jquery-1.11.1.js"></script>
+  	<script src="plotly-latest.min.js"></script>
+  </head>
+  <body>
+  	<div id = "attackDiv">
+  		<input type="text" id="attackText">
+  		<button id="btnAttack" onClick = "attack()"> Attack </button> 
+  	</div>
+    <div id="container">
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var socket = io();
+    var knownIds = [];
+    var dataToGraph = [];
+    var plotData = [];
+
+    function attack() {
+    	
+    	var targets = document.getElementById('attackText').value;
+    	if(targets != "") {
+    		//var targetJson = parseTarget(targets);
+    		document.getElementById('attackText').value = "";
+    		console.log(targets);
+    		socket.emit('attack', targets);
+    	}
+    		
+    }
+  
+    function updateDelay(id) {
+      var time = document.getElementById(id+'text').value;
+      document.getElementById(id+'text').value = "";
+      console.log(time);
+
+      socket.emit('update delay', {id:id , time:time});
+    }
+    
+    function graphData(position, sensor) {
+
+    	var trace1 = {
+    	  x: plotData[position].sensors[sensor].values.x,
+    	  y: plotData[position].sensors[sensor].values.y,
+    	  type: 'scatter'
+    	};
+
+    	dataToGraph.push(trace1);
+
+    }
+
+    function arduinoToJSON(idAsStr, position) {
+		
+    	var arduino = {};
+    	arduino.id = idAsStr;
+    	console.log('1');
+    	console.log(arduino);
+
+    	arduino.sensors = [];
+    	console.log('2');
+    	console.log(arduino);
+
+    	createSensors(arduino);
+    	plotData.push(arduino);
+    }
+
+    function createSensors(arduino)
+    {
+    	for(var i = 0 ; i<2 ; i++)
+    	{
+    		var sensorName = "sensor"+i;
+    		arduino.sensors[i] = {};
+    		arduino.sensors[i].name = sensorName;
+    		arduino.sensors[i].values = {};
+    		arduino.sensors[i].values.x = [];
+    		arduino.sensors[i].values.y = [];
+    	}
+    }
+    
+    function fillArduino(positionArduino, positionSensor, dataX, dataY) {
+    	//If the array of values is < than 20, keep pushing data
+    	//otherwise, shift the array (pop the first element) and push
+    	if(plotData[positionArduino].sensors[positionSensor].values.x.length < 20){
+	    	plotData[positionArduino].sensors[positionSensor].values.x.push(dataX);
+    		plotData[positionArduino].sensors[positionSensor].values.y.push(dataY);
+    	} else {
+    		plotData[positionArduino].sensors[positionSensor].values.x.shift();
+    		plotData[positionArduino].sensors[positionSensor].values.y.shift();
+    		plotData[positionArduino].sensors[positionSensor].values.x.push(dataX);
+    		plotData[positionArduino].sensors[positionSensor].values.y.push(dataY);
+    	}
+    }
+
+    socket.on('iot data', function(data, body){
+
+    var xdata = body.datetime;
+    console.log(xdata);
+    var ydata = [];
+    ydata[0] = body.data.sensor0;
+    ydata[1] = body.data.sensor1;
+    console.log(ydata);
+
+    //"cut" the id from the data
+    var idAsStr = body.id;
+
+
+    //if ID is already on our html, refresh it's data
+    //otherwise add a new div for it
+    if(knownIds.indexOf(idAsStr) == -1){
+      knownIds.push(idAsStr);
+      
+      $('#container').append('<div id = \"' + idAsStr + '\"">' + data + '</div>');
+      $('#container').append('<input type="text" id= "' + idAsStr + 'text"> <button id= "' + idAsStr + 'button" onClick="updateDelay(\''+idAsStr+'\')"> Send </button>');
+      $('#container').append('<div id = \"' + idAsStr + 'graph' +'\"" style="width:600px;height:450px;"></div>');
+
+
+	arduinoToJSON(idAsStr, plotData.length);
+    
+    //Push the new data to our array
+	for(var j = 0; j<2; j++) {
+	   	fillArduino(knownIds.indexOf(idAsStr), j, xdata, ydata[j]);
+	}
+
+    for(var j = 0; j<2; j++) {
+	    graphData(plotData.length-1, j);
+    }
+
+
+    } else {
+    //Otherwise we already know the arduino posting
+    //so just refresh the data
+
+    	$('#' + idAsStr).text(data);
+      
+  		for(var j = 0; j<2; j++) {
+  		   	fillArduino(knownIds.indexOf(idAsStr), j, xdata, ydata[j]);
+  		}
+      	
+    }
+
+	var myArray;
+    for(var i = 0; i<knownIds.length; i++)
+	{    	
+    	myArray = [];
+
+	    for(var j = 0; j<2; j++)
+    	{
+    		myArray.push(dataToGraph[i*2 + j]);
+    	}
+    	
+		Plotly.newPlot(knownIds[i] + 'graph', myArray);
+
+    }  
+
+    });
+    </script>
+      
+    </body>
+  </html>
