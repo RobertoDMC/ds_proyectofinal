@@ -58,7 +58,7 @@ app.post("/", function(req, res){
   //if ID isn't known push it into our knownIds
   if(!(knownIds[id])) {
     //Default delay is 1 second
-    knownIds[id] = {time:1000, changed:false};
+    knownIds[id] = {time:1000, sent:false, changed:false};
     //console.log(knownIds);
   } 
   else
@@ -94,6 +94,7 @@ app.post("/", function(req, res){
           console.log(content);
           res.setHeader('Content-Type', 'application/json');
           res.send(JSON.stringify(content));
+          knownIds[id].sent = true;
           attack = false;
         }
     }
