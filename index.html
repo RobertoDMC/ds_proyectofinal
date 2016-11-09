@@ -16,7 +16,8 @@
   <body>
   	<div id = "attackDiv">
   		<input type="text" id="attackText">
-  		<button id="btnAttack" onClick = "attack()"> Attack </button> 
+        <button id="btnAttack" onClick = "attack()"> Attack </button> 
+  		<button id="btnStop" onClick = "stop()"> Attack </button> 
   	</div>
     <div id="container">
     </div>
@@ -26,6 +27,10 @@
     var knownIds = [];
     var dataToGraph = [];
     var plotData = [];
+
+    function stop(){
+        socket.emit('stop');
+    }
 
     function attack() {
     	
