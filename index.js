@@ -48,9 +48,6 @@ app.post("/ips", function(req, res) {
 
 app.post("/", function(req, res){
   
-  //console.log("Attack :");
-  //console.log(attack);
-
   var id = req.body.id;
   var datetime = req.body.datetime;
   var sensorData = req.body.data;
@@ -58,23 +55,11 @@ app.post("/", function(req, res){
   //if ID isn't known push it into our knownIds
   if(!(knownIds[id])) {
     //Default delay is 1 second
-    knownIds[id] = {time:1000, sent:false, changed:false};
+    knownIds[id] = {time:1000, sent:false};
     //console.log(knownIds);
   } 
   else
   {
-    //send the new delay value
-    if(knownIds[id].changed == true) { 
-      res.setHeader('Content-Length', knownIds[id].time.toString().length);
-      res.writeHead(200, {'Content-Type': 'text/plain'});
-      res.write(knownIds[id].time);
-      res.end();
-
-      knownIds[id].changed = false;
-    } 
-    else 
-    {
-      //res.end("ok");
       if(!attack) 
       {
           console.log("OK");
@@ -96,18 +81,13 @@ app.post("/", function(req, res){
           res.send(JSON.stringify(content));
           knownIds[id].sent = true;
           attack = false;
-        }
-    }
-
+      }
   }
   
-
-  //console.log(knownIds);
 
   var date = new Date();
   var ms = date.getMilliseconds();
   req.body.datetime = req.body.datetime + '.' + ms;
-  //req.body.datetime = ;
 
   //build the string to show on the clients
   var data = "";
