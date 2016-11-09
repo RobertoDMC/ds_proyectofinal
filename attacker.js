@@ -89,16 +89,16 @@ var controlLoop = setInterval(function(){
     //console.log(info);
     postIOT();
     setTimeout(function(){
-        console.log("Sleep 2 sec");
+        //console.log("Sleep 2 sec");
     },3000);  
-    console.log("Leader?");
-    console.log(leader);
-    console.log("Posts");
-    console.log(posts);
-    console.log("Length: " + length);
+    // console.log("Leader?");
+    // console.log(leader);
+    // console.log("Posts");
+    // console.log(posts);
+    // console.log("Length: " + length);
         if(leader && posts == length)
         {
-            console.log("Start Attacking");
+            console.log("I am the leader  and you shall Start Attacking my beatutiful babies");
             startAttack();
             leaderC ++;
         }
@@ -148,7 +148,7 @@ function postIOT(){
 //Post para esoger el lider
 app.post("/leader", function(req, res){
     //console.log("ID" + req.body);
-    if(pid < req.body.id)
+    if(pid <= req.body.id)
     {
         //el pid recibido es mayor q el mio, no soy leader
         res.end("leader");
@@ -201,6 +201,7 @@ function setLeader(){
         json: true,   // <--Very important!!!
         body: pidjs
         }, function (error, response, body){
+            //console.log(body);
             if(body == "notLeader")
             {
                 leader = false;
@@ -260,7 +261,7 @@ function attackPost(){
         data.data = {'sensor0':val1, 'sensor1':val2};
         
         (request({
-        url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.port[attacking] + "/",
+        url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.ports[attacking] + "/",
         method: "POST",
         json: true,   // <--Very important!!!
         body: data

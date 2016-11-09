@@ -73,14 +73,21 @@ app.post("/", function(req, res){
               targets:[{ip:2.1.3, port:123},...]
             }
           */
-          var content = {};
-          content.arduinos = ipPortPair;
-          content.targets = targetJson;
-          console.log("Content:");
-          console.log(content);
-          res.setHeader('Content-Type', 'application/json');
-          res.send(JSON.stringify(content));
-          knownIds[id].sent = true;
+          if(knownIds[id].sent == false)
+          {
+            var content = {};
+            content.arduinos = ipPortPair;
+            content.targets = targetJson;
+            console.log("Content:");
+            console.log(content);
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(content));
+            knownIds[id].sent = true;
+          }
+          else
+          {
+            res.end("ok");
+          }
       }
     
   }
