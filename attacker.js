@@ -252,21 +252,21 @@ function attackPost(){
         console.log("Attacking");
         console.log(attackInfo.ips[0])
         console.log(attackInfo.ports[0])
-            var time = getDateTime();
-            var val1 = Math.floor((Math.random() * 200) - 100);
-            var val2 = Math.floor((Math.random() * 200) - 100);
+        var time = getDateTime();
+        var val1 = Math.floor((Math.random() * 200) - 100);
+        var val2 = Math.floor((Math.random() * 200) - 100);
 
-            data.datetime = "\"" + time + "\"";
-            data.data = {'sensor0':val1, 'sensor1':val2};
-            
-                (request({
-                url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.port[attacking] + "/",
-                method: "POST",
-                json: true,   // <--Very important!!!
-                body: data
-                }, function (error, response, body){
-                //Ignore the response    
-                })); 
+        data.datetime = "\"" + time + "\"";
+        data.data = {'sensor0':val1, 'sensor1':val2};
+        
+        (request({
+        url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.port[attacking] + "/",
+        method: "POST",
+        json: true,   // <--Very important!!!
+        body: data
+        }, function (error, response, body){
+        //Ignore the response    
+        })); 
 };
 
 //Obteniendo datetime
