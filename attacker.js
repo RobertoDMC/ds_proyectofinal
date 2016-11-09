@@ -8,11 +8,11 @@ var http = require('http').Server(app);
 var bodyParser = require('body-parser');
 var idArduino = process.argv[2];
 //Arreglo de ips y p[uertos de los otros arduinos
-var arduinos;
+var arduinos = [];
 //Un JSON de la Forma {position:N}, donde n es la posicion del vector de ips attackInfo, a la cual se atacara
 var attacking;
 //Ip y puerto de donde atacar
-var attackInfo;
+var attackInfo = [];
 //Json con la IP y piuerto del Arduino
 var info = {};
 //Flag si el arduino es leader o no
@@ -39,16 +39,24 @@ var i;
 //Variable que cuenta si es que ya existio un lider por lo menos una vez
 var leaderC;
 
-var length = 1;
+var length = 4;
 
-//Obteniendo la Ip del arduino y creando al arreglo info
-require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-  ip = add;
-  console.log(ip);
-  info.id = data.id;
-  info.ip = ip;
-  info.port = port;
-});
+
+
+//function orderExe(callback) {
+  //Obteniendo la Ip del arduino y creando al arreglo info
+    require('dns').lookup(require('os').hostname(), function (err, add, fam) {
+      ip = add;
+      //console.log(ip);
+      info.ip = ip;
+      info.port = port;
+      //console.log("INFO");
+      //console.log(info);
+    });
+//    callback();  
+//};
+
+//orderExe(postIP);
 
 app.use(express.static('public'));
 
@@ -62,34 +70,47 @@ app.get('/', function(req, res){
 
 var pid = Math.floor((Math.random() * 100) - 1);
 console.log("ID:" + pid);
-
 //Post para enviar una vez al servidor la ip y puerto del arduino
-(request({
-url: "http://localhost:8080/ips",
-method: "POST",
-json: true,   // <--Very important!!!
-body: info
-}, function (error, response, body){
-    console.log(body);
-})); 
+setTimeout(function postIP(){
+    //console.log("POSTING IPS");
+    (request({
+    url: "http://localhost:8080/ips",
+    method: "POST",
+    json: true,   // <--Very important!!!
+    body: info
+    }, function (error, response, body){
+        //console.log(body);
+    })); 
+    }, 1000
+);
+
 
 var controlLoop = setInterval(function(){
+    //console.log(info);
     postIOT();
-    if(leader && posts == length)
-    {
-        startAttack();
-        leaderC ++;
-    }
-    if(attack)
-    {
-        attackPost();
-    }
-    if(!leader && leaderC >0)
-    {
-        checkLeader();
-    }
-
-},delay); 
+    setTimeout(function(){
+        console.log("Sleep 2 sec");
+    },3000);  
+    console.log("Leader?");
+    console.log(leader);
+    console.log("Posts");
+    console.log(posts);
+    console.log("Length: " + length);
+        if(leader && posts == length)
+        {
+            console.log("Start Attacking");
+            startAttack();
+            leaderC ++;
+        }
+        if(attack)
+        {
+            attackPost();
+        }
+        if(!leader && leaderC >0)
+        {
+            checkLeader();
+        }
+},1000); 
 
 //Funcion para hacer post al Server IOT
 function postIOT(){
@@ -106,26 +127,20 @@ function postIOT(){
             body: data
             }, function (error, response, body){
             //console.log(body);
-            if(!isNaN(body))
-            {
-                console.log("Delay Changed");
-                delay = parseInt(body);
-            }
-            else
-            {
                 //console.log("BODY AQUI");
                 //console.log(body);
-                if(body != "ok")
-                {
-                    console.log(body.arduino);
-                    console.log(body.target);
-                    //console.log(body.arduino[0]);
-                    //console.log(body.arduino[1]);
-                    arduinos = body.arduino;
-                    attackInfo = body.target;
-                    length = arduinos.length;
-                    setLeader();
-                }
+            if(body != "ok")
+            {   
+                setTimeout(function(){
+                console.log("ARDUINOS");
+                arduinos = body.arduinos;
+                console.log(arduinos);
+                console.log("TARGETS");
+                attackInfo = body.targets;
+                console.log(attackInfo);
+                length = arduinos.length;
+                setLeader();
+                }, 1000);
             }
             })); 
 };
@@ -137,13 +152,13 @@ app.post("/leader", function(req, res){
     {
         //el pid recibido es mayor q el mio, no soy leader
         res.end("leader");
-        console.log("leader");
+        console.log("I am not the leader");
     }
     else
     {
         //pid recibido es menor q el mio yo soy leader
         res.end("notLeader");
-        console.log("notLeader");
+        console.log("I am the Leader");
     }
     posts++;
 });
@@ -215,10 +230,11 @@ function checkLeader(){
 
 //Attackpost para atacar a la ip designada
 function startAttack(){
+    console.log("Start Attacking Small Children");
             var attackjs = {};
-            attackjs.position = Math.floor((Math.random() * arduinos.length) - 1);
+            attackjs.position = 0;//Math.floor((Math.random() * length) - 1);
             attackjs.leader = info;
-            for(i = 0 ; i < arduinos.length; i++)
+            for(i = 0 ; i < length; i++)
             {
                 (request({
                 url: "http://" + arduinos[i].ip + ":" + arduinos[i].port + "/attack",
@@ -233,6 +249,9 @@ function startAttack(){
 
 //Attackpost para atacar a la ip designada
 function attackPost(){
+        console.log("Attacking");
+        console.log(attackInfo.ips[0])
+        console.log(attackInfo.ports[0])
             var time = getDateTime();
             var val1 = Math.floor((Math.random() * 200) - 100);
             var val2 = Math.floor((Math.random() * 200) - 100);
@@ -241,7 +260,7 @@ function attackPost(){
             data.data = {'sensor0':val1, 'sensor1':val2};
             
                 (request({
-                url: "http://" + attackInfo[attacking].ip + ":" + attackInfo[attacking].port,
+                url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.port[attacking] + "/",
                 method: "POST",
                 json: true,   // <--Very important!!!
                 body: data
@@ -288,3 +307,4 @@ function getDateTime() {
 http.listen(port, function(){
   console.log('listening on: ' + port);
 });
+

