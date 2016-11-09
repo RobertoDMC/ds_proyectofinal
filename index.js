@@ -95,7 +95,6 @@ app.post("/", function(req, res){
           res.setHeader('Content-Type', 'application/json');
           res.send(JSON.stringify(content));
           knownIds[id].sent = true;
-          attack = false;
         }
     }
 
