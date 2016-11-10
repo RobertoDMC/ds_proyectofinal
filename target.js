@@ -3,11 +3,14 @@ var app = express();
 var http = require('http').Server(app);
 var bodyParser = require('body-parser');
 
+var c = 0;
+
 const PORT = 10100;
 
 app.post("/", function(req, res) {
 	console.log("Post Received");
-	console.log(req.body);
+	c++;
+	console.log(c);
 })
 
 http.listen(PORT, function(){
