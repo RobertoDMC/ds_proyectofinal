@@ -62,7 +62,7 @@ app.post("/", function(req, res){
   } 
   else
   {
-      if(!attack && !stop) 
+      if(!attack) 
       {
           console.log("OK");
           res.end("ok");
@@ -81,13 +81,20 @@ app.post("/", function(req, res){
             res.send(JSON.stringify(content));
             knownIds[id].sent = true;
           }
-          else if(knownIds[id].stop == false)
-          {
-            res.end("stop");
-          }
           else
           {
-            res.end("ok"); 
+            res.end("ok");
+          }
+          if(stop)
+          {
+            if(knownIds[id].stop == false)
+            {
+              res.end("stop");
+            }
+            else
+            {
+              res.end("ok"); 
+            }
           }
       }
     
