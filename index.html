@@ -47,7 +47,7 @@
     function updateDelay(id) {
       var time = document.getElementById(id+'text').value;
       document.getElementById(id+'text').value = "";
-      console.log(time);
+      //console.log(time);
 
       socket.emit('update delay', {id:id , time:time});
     }
@@ -68,12 +68,12 @@
 		
     	var arduino = {};
     	arduino.id = idAsStr;
-    	console.log('1');
-    	console.log(arduino);
+    	//console.log('1');
+    	//console.log(arduino);
 
     	arduino.sensors = [];
-    	console.log('2');
-    	console.log(arduino);
+    	//console.log('2');
+    	//console.log(arduino);
 
     	createSensors(arduino);
     	plotData.push(arduino);
@@ -109,11 +109,11 @@
     socket.on('iot data', function(data, body){
 
     var xdata = body.datetime;
-    console.log(xdata);
+    //console.log(xdata);
     var ydata = [];
     ydata[0] = body.data.sensor0;
     ydata[1] = body.data.sensor1;
-    console.log(ydata);
+    //console.log(ydata);
 
     //"cut" the id from the data
     var idAsStr = body.id;
