@@ -305,7 +305,6 @@ function getDateTime() {
 
     return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + "." + milli;
 };
-
 //Servidor escuchando en un puerto
 http.listen(port, function(){
   console.log('listening on: ' + port);
